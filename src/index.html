@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CWG Ticker</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+  
+  <link rel="stylesheet" href="css/style.css">
+
+  
+</head>
+
+<body>
+  <div class="ticker-wrap">
+  <div class="ticker__rundown" id="rundown">
+    
+  </div>
+  <div class="ticker" id="ticker_well">
+    <div class="ticker__item">You're Watching the Carolina Weather Group</div>
+  </div>
+<script src="../node_modules/rss-parser/dist/rss-parser.min.js"></script>
+<script>
+  console.log("Starting up...");
+  const feeds = [
+    {
+      title: 'SC Currents',
+      url: 'http://www.rssmix.com/u/8262815/rss.xml',
+      items: []
+    },
+    {
+      title: 'NC Currents',
+      url:'http://www.rssmix.com/u/8262414/rss.xml',
+      items: []
+    }
+  ];
+
+  const fetchRSS = promisify(RSSParser.parseURL);
+
+  function fetchFeeds() {
+    return new Promise(async function(resolve, reject) {
+      const tickerData = [];
+      for(i = 0; i < feeds.length; i++) {
+        data = await fetchRSS(feeds[i].url);
+        tickerData[i] = prepTickerItems(data.feed.entries, i);
+      }
+      resolve(tickerData);
+    });
+  }
+
+  function initRundown() {
+    feeds.forEach((element, index) => {
+      const rundown_item = document.createElement('div');
+      const rundown_text = document.createTextNode(element.title);
+      rundown_item.className = "rundown__item";
+      rundown_item.id = "rundown__item-" + index;
+      rundown_item.appendChild(rundown_text);
+      document.querySelector('#rundown').appendChild(rundown_item);
+    });
+  }
+
+  function prepTickerItems(items, index) {
+    console.log("Preparing ticker items");
+    console.log(items);
+    let itemsArr = [];
+    items.forEach(element => {
+      const ticker_item = document.createElement('div');
+      ticker_item.className = "ticker__item";
+      ticker_item.appendChild(document.createTextNode(element.title));
+      itemsArr.push(ticker_item);
+    });
+
+    return itemsArr;
+  }
+
+  function initTickerText(data) {
+    console.log("In initTickerText");
+    console.log(data);
+    data.forEach((ticker, index) => {
+      for(i = 0; i < ticker.length; i++) {
+        document.querySelector('#ticker_well').appendChild(ticker[i]);
+      }
+    });
+  }
+
+  function startTicker() {
+    initRundown();
+    let feedData = fetchFeeds();
+    console.log(feedData);
+    feedData.then(data => initTickerText(data));
+  }
+
+  function errorCallback() {
+    console.log("error");
+  }
+
+  // Cleans up the RSS reader a little
+  function promisify(func) {
+    return (...args) =>
+      new Promise((resolve, reject) => {
+        const callback = (err, data) => err ? reject(err) : resolve(data)
+        
+        func.apply(this, [...args, callback])
+      })
+  }
+  
+  startTicker();
+  
+</script>
+</body>
+</html>
