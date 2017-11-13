@@ -18,7 +18,7 @@
     
   </div>
   <div class="ticker" id="ticker_well">
-    <div class="ticker__item">You're Watching the Carolina Weather Group</div>
+    <div class="ticker__item active">You're Watching the Carolina Weather Group</div>
   </div>
 <script src="../node_modules/rss-parser/dist/rss-parser.min.js"></script>
 <script>
@@ -37,6 +37,7 @@
   ];
 
   const fetchRSS = promisify(RSSParser.parseURL);
+  let tickerItemIndex = 0;
 
   function fetchFeeds() {
     return new Promise(async function(resolve, reject) {
@@ -75,20 +76,39 @@
   }
 
   function initTickerText(data) {
-    console.log("In initTickerText");
-    console.log(data);
-    data.forEach((ticker, index) => {
-      for(i = 0; i < ticker.length; i++) {
-        document.querySelector('#ticker_well').appendChild(ticker[i]);
+    return new Promise(function (resolve, reject) {
+      for(d = 0; d < data.length; d++) {
+        for(i = 0; i < data[d].length; i++) {
+          document.querySelector('#ticker_well').appendChild(data[d][i]);
+        }
       }
+      resolve(true);
     });
+  }
+
+  function nextItem() {
+    console.log("Running nextItem");
+    let tickerUI = document.querySelectorAll('#ticker_well .ticker__item');
+    if (tickerItemIndex < tickerUI.length) {
+      prevIndex = tickerItemIndex - 1;
+      if(typeof tickerUI[prevIndex] !== "undefined") {
+        tickerUI[prevIndex].className = "ticker__item";
+      }
+      tickerUI[tickerItemIndex].className = "ticker__item active";
+      tickerItemIndex++;
+    } else {
+      // Reset index.
+      tickerUI[(tickerUI.length - 1)].className = "ticker__item";
+      tickerItemIndex = 0;
+    };
+
+    setTimeout(nextItem,5000);
   }
 
   function startTicker() {
     initRundown();
     let feedData = fetchFeeds();
-    console.log(feedData);
-    feedData.then(data => initTickerText(data));
+    feedData.then(data => initTickerText(data).then(nextItem()));
   }
 
   function errorCallback() {
