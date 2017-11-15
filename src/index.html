@@ -14,9 +14,9 @@
 
 <body>
   <div class="ticker-wrap">
-  <div class="ticker__rundown" id="rundown">
+  <!-- <div class="ticker__rundown" id="rundown">
     
-  </div>
+  </div> -->
   <div class="ticker" id="ticker_well">
     <div class="ticker__item active">You're Watching the Carolina Weather Group</div>
   </div>
@@ -64,6 +64,7 @@
   function prepTickerItems(items, index) {
     console.log("Preparing ticker items");
     console.log(items);
+    console.log(index);
     let itemsArr = [];
     items.forEach(element => {
       const ticker_item = document.createElement('div');
@@ -106,7 +107,7 @@
   }
 
   function startTicker() {
-    initRundown();
+    //initRundown();
     let feedData = fetchFeeds();
     feedData.then(data => initTickerText(data).then(nextItem()));
   }
